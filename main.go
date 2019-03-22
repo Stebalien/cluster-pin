@@ -112,7 +112,7 @@ type pinResult struct {
 
 func run(args []string) error {
 	ctx, cancel := context.WithCancel(context.Background())
-	cancel()
+	defer cancel()
 
 	cluster, err := clusterClient()
 	if err != nil {
@@ -173,6 +173,7 @@ func run(args []string) error {
 				select {
 				case results <- pinResult{job, pin(ctx, cluster, job.hash, job.name)}:
 				case <-ctx.Done():
+					return
 				}
 			}
 		}()
