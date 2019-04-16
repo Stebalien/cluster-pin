@@ -81,6 +81,7 @@ func connect(ctx context.Context, ipfs ipfsapi.CoreAPI, cluster clusterhttp.Clie
 	wg.Add(len(pinfos))
 	for _, pi := range pinfos {
 		go func(pi *pstore.PeerInfo) {
+			defer wg.Done()
 			err := ipfs.Swarm().Connect(ctx, *pi)
 			if err != nil {
 				log.Printf("failed to connect to %s: %s", pi.ID, err)
@@ -125,7 +126,9 @@ func run(args []string) error {
 	}
 
 	// Connect in the background.
+	connectJob := make(chan struct{})
 	go func() {
+		defer close(connectJob)
 		err := connect(ctx, ipfs, cluster)
 		if err != nil {
 			log.Printf("failed to connect to cluster: %s", err)
@@ -196,6 +199,12 @@ func run(args []string) error {
 
 	if failed {
 		return fmt.Errorf("failed to pin everything")
+	}
+	select {
+	case <-connectJob:
+	default:
+		fmt.Printf("waiting to finish connecting to cluster...")
+		<-connectJob
 	}
 	return nil
 }
