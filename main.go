@@ -10,12 +10,12 @@ import (
 	"strings"
 	"sync"
 
-	xdg "github.com/adrg/xdg"
 	cid "github.com/ipfs/go-cid"
 	ipfshttp "github.com/ipfs/go-ipfs-http-client"
 	ipfsapi "github.com/ipfs/interface-go-ipfs-core"
 	clusterapi "github.com/ipfs/ipfs-cluster/api"
 	clusterhttp "github.com/ipfs/ipfs-cluster/api/rest/client"
+	configdir "github.com/kirsle/configdir"
 	peer "github.com/libp2p/go-libp2p-peer"
 	pstore "github.com/libp2p/go-libp2p-peerstore"
 )
@@ -34,11 +34,7 @@ func clusterClient() (clusterhttp.Client, error) {
 		clusterhttp.Config
 		APIAddr, ProxyAddr clusterapi.Multiaddr
 	}
-	configFilePath, err := xdg.SearchConfigFile("ipfs-cluster/client.json")
-	if err != nil {
-		return nil, err
-	}
-
+	configFilePath := configdir.LocalConfig("ipfs-cluster", "client.json")
 	configFile, err := os.Open(configFilePath)
 	if err != nil {
 		return nil, err
