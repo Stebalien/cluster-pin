@@ -93,9 +93,10 @@ func pin(ctx context.Context, cluster clusterhttp.Client, hash, name string) err
 	if err != nil {
 		return fmt.Errorf("could not decode cid")
 	}
-	return cluster.Pin(ctx, object, clusterapi.PinOptions{
+	_, err = cluster.Pin(ctx, object, clusterapi.PinOptions{
 		Name: name,
 	})
+	return err
 }
 
 type pinJob struct {
